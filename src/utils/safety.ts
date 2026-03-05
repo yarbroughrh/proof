@@ -4,6 +4,7 @@ import { TREASURY_WALLET } from "./constants";
 const PLACEHOLDER_PUBKEY = "11111111111111111111111111111111";
 
 export function isTreasuryConfigured(): boolean {
+  if (__DEV__) return true;
   return TREASURY_WALLET.toBase58() !== PLACEHOLDER_PUBKEY;
 }
 

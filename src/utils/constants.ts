@@ -24,9 +24,8 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 );
 
-// Replace with your actual treasury wallet before launch
 export const TREASURY_WALLET = new PublicKey(
-  "11111111111111111111111111111111" // PLACEHOLDER - replace with your wallet
+  "BHuzrxuo3FQW3cYnh6iBhpZBX156Y9XKPPEC3Cxjor87"
 );
 
 export const PROTOCOL_FEE_BPS = 500; // 5% = 500 basis points
