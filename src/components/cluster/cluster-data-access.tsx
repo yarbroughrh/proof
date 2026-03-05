@@ -32,6 +32,11 @@ export function toWalletAdapterNetwork(
 
 export const defaultClusters: Readonly<Cluster[]> = [
   {
+    name: "mainnet-beta",
+    endpoint: clusterApiUrl("mainnet-beta"),
+    network: ClusterNetwork.Mainnet,
+  },
+  {
     name: "devnet",
     endpoint: clusterApiUrl("devnet"),
     network: ClusterNetwork.Devnet,

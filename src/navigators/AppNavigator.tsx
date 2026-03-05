@@ -1,41 +1,19 @@
-/**
- * The app navigator (formerly "AppNavigator" and "MainNavigator") is used for the primary
- * navigation flows of your app.
- */
 import {
   DarkTheme as NavigationDarkTheme,
-  DefaultTheme as NavigationDefaultTheme,
   NavigationContainer,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Appearance, useColorScheme } from "react-native";
-import * as Screens from "../screens";
 import { HomeNavigator } from "./HomeNavigator";
+import { SettingsScreen } from "../screens/SettingsScreen";
+import ProofDetailScreen from "../screens/ProofDetailScreen";
 import { StatusBar } from "expo-status-bar";
-import {
-  MD3DarkTheme,
-  MD3LightTheme,
-  adaptNavigationTheme,
-} from "react-native-paper";
-
-/**
- * This type allows TypeScript to know what routes are defined in this navigator
- * as well as what properties (if any) they might take when navigating to them.
- *
- * If no params are allowed, pass through `undefined`.
- *
- * For more information, see this documentation:
- *   https://reactnavigation.org/docs/params/
- *   https://reactnavigation.org/docs/typescript#type-checking-the-navigator
- *   https://reactnavigation.org/docs/typescript/#organizing-types
- *
- */
+import { Colors } from "../utils/theme";
 
 type RootStackParamList = {
-  Home: undefined;
+  HomeStack: undefined;
   Settings: undefined;
-  // 🔥 Your screens go here
+  ProofDetail: { proofId: string };
 };
 
 declare global {
@@ -44,19 +22,33 @@ declare global {
   }
 }
 
-// Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator();
 
 const AppStack = () => {
   return (
-    <Stack.Navigator initialRouteName={"Home"}>
+    <Stack.Navigator
+      initialRouteName="HomeStack"
+      screenOptions={{
+        headerStyle: { backgroundColor: "#0A0A0F" },
+        headerTintColor: Colors.verified,
+        headerTitleStyle: { fontWeight: "700" },
+      }}
+    >
       <Stack.Screen
         name="HomeStack"
         component={HomeNavigator}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="Settings" component={Screens.SettingsScreen} />
-      {/** 🔥 Your screens go here */}
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: "Settings" }}
+      />
+      <Stack.Screen
+        name="ProofDetail"
+        component={ProofDetailScreen}
+        options={{ title: "Proof Details" }}
+      />
     </Stack.Navigator>
   );
 };
@@ -65,35 +57,21 @@ export interface NavigationProps
   extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
 
 export const AppNavigator = (props: NavigationProps) => {
-  const colorScheme = useColorScheme();
-  const { LightTheme, DarkTheme } = adaptNavigationTheme({
-    reactNavigationLight: NavigationDefaultTheme,
-    reactNavigationDark: NavigationDarkTheme,
-  });
-
-  const CombinedDefaultTheme = {
-    ...MD3LightTheme,
-    ...LightTheme,
+  const theme = {
+    ...NavigationDarkTheme,
     colors: {
-      ...MD3LightTheme.colors,
-      ...LightTheme.colors,
-    },
-  };
-  const CombinedDarkTheme = {
-    ...MD3DarkTheme,
-    ...DarkTheme,
-    colors: {
-      ...MD3DarkTheme.colors,
-      ...DarkTheme.colors,
+      ...NavigationDarkTheme.colors,
+      background: "#0A0A0F",
+      card: "#0A0A0F",
+      text: "#E8E8F0",
+      border: "#1A1A2E",
+      primary: Colors.verified,
     },
   };
 
   return (
-    <NavigationContainer
-      theme={colorScheme === "dark" ? CombinedDarkTheme : CombinedDefaultTheme}
-      {...props}
-    >
-      <StatusBar />
+    <NavigationContainer theme={theme} {...props}>
+      <StatusBar style="light" />
       <AppStack />
     </NavigationContainer>
   );

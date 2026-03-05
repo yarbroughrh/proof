@@ -1,32 +1,47 @@
 {
   "expo": {
-    "name": "proof",
-    "slug": "proof",
+    "name": "Proof",
+    "slug": "proof-solana",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0A0A0F"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.solana.mobile.expo.template"
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0A0A0F"
       },
-      "package": "com.solana.mobile.expo.template"
+      "package": "com.proof.solana",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Proof needs camera access to capture verifiable photos."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Proof uses your location to anchor where a photo was taken."
+        }
+      ],
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }

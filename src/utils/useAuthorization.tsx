@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { PublicKey, PublicKeyInitData } from "@solana/web3.js";
 import {
   Account as AuthorizedAccount,
@@ -7,7 +7,6 @@ import {
   AuthToken,
   Base64EncodedAddress,
   DeauthorizeAPI,
-  SignInPayloadWithRequiredFields,
   SignInPayload,
 } from "@solana-mobile/mobile-wallet-adapter-protocol";
 import { toUint8Array } from "js-base64";
@@ -15,7 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
 const CHAIN = "solana";
-const CLUSTER = "devnet";
+const CLUSTER = "mainnet-beta";
 const CHAIN_IDENTIFIER = `${CHAIN}:${CLUSTER}`;
 
 export type Account = Readonly<{
@@ -28,6 +27,7 @@ type WalletAuthorization = Readonly<{
   accounts: Account[];
   authToken: AuthToken;
   selectedAccount: Account;
+  walletUriBase?: string;
 }>;
 
 function getAccountFromAuthorizedAccount(account: AuthorizedAccount): Account {
@@ -43,9 +43,7 @@ function getAuthorizationFromAuthorizationResult(
 ): WalletAuthorization {
   let selectedAccount: Account;
   if (
-    // We have yet to select an account.
     previouslySelectedAccount == null ||
-    // The previously selected account is no longer in the set of authorized addresses.
     !authorizationResult.accounts.some(
       ({ address }) => address === previouslySelectedAccount.address
     )
@@ -59,6 +57,7 @@ function getAuthorizationFromAuthorizationResult(
     accounts: authorizationResult.accounts.map(getAccountFromAuthorizedAccount),
     authToken: authorizationResult.auth_token,
     selectedAccount,
+    walletUriBase: (authorizationResult as any).wallet_uri_base ?? undefined,
   };
 }
 
@@ -69,7 +68,7 @@ function getPublicKeyFromAddress(address: Base64EncodedAddress): PublicKey {
 
 function cacheReviver(key: string, value: any) {
   if (key === "publicKey") {
-    return new PublicKey(value as PublicKeyInitData); // the PublicKeyInitData should match the actual data structure stored in AsyncStorage
+    return new PublicKey(value as PublicKeyInitData);
   } else {
     return value;
   }
@@ -78,7 +77,7 @@ function cacheReviver(key: string, value: any) {
 const AUTHORIZATION_STORAGE_KEY = "authorization-cache";
 
 async function fetchAuthorization(): Promise<WalletAuthorization | null> {
-  const cacheFetchResult = await AsyncStorage.getItem(
+  const cacheFetchResult = await SecureStore.getItemAsync(
     AUTHORIZATION_STORAGE_KEY
   );
 
@@ -86,19 +85,25 @@ async function fetchAuthorization(): Promise<WalletAuthorization | null> {
     return null;
   }
 
-  // Return prior authorization, if found.
   return JSON.parse(cacheFetchResult, cacheReviver);
 }
 
 async function persistAuthorization(
   auth: WalletAuthorization | null
 ): Promise<void> {
-  await AsyncStorage.setItem(AUTHORIZATION_STORAGE_KEY, JSON.stringify(auth));
+  if (auth === null) {
+    await SecureStore.deleteItemAsync(AUTHORIZATION_STORAGE_KEY);
+  } else {
+    await SecureStore.setItemAsync(
+      AUTHORIZATION_STORAGE_KEY,
+      JSON.stringify(auth)
+    );
+  }
 }
 
 export const APP_IDENTITY = {
-  name: "Solana Mobile Expo Template",
-  uri: "https://fakedomain.com",
+  name: "Proof",
+  uri: "https://proof.solana.app",
 };
 
 export function useAuthorization() {
@@ -169,6 +174,7 @@ export function useAuthorization() {
       authorizeSessionWithSignIn,
       deauthorizeSession,
       selectedAccount: authorization?.selectedAccount ?? null,
+      walletUriBase: authorization?.walletUriBase ?? undefined,
       isLoading,
     }),
     [authorization, authorizeSession, deauthorizeSession]

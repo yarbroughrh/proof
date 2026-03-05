@@ -9,34 +9,43 @@ import { useCallback, useMemo } from "react";
 import { SignInPayload } from "@solana-mobile/mobile-wallet-adapter-protocol";
 
 export function useMobileWallet() {
-  const { authorizeSessionWithSignIn, authorizeSession, deauthorizeSession } =
-    useAuthorization();
+  const {
+    authorizeSessionWithSignIn,
+    authorizeSession,
+    deauthorizeSession,
+    walletUriBase,
+  } = useAuthorization();
+
+  const walletConfig = useMemo(
+    () => (walletUriBase ? { baseUri: walletUriBase } : undefined),
+    [walletUriBase]
+  );
 
   const connect = useCallback(async (): Promise<Account> => {
     return await transact(async (wallet) => {
       return await authorizeSession(wallet);
-    });
-  }, [authorizeSession]);
+    }, walletConfig);
+  }, [authorizeSession, walletConfig]);
 
   const signIn = useCallback(
     async (signInPayload: SignInPayload): Promise<Account> => {
       return await transact(async (wallet) => {
         return await authorizeSessionWithSignIn(wallet, signInPayload);
-      });
+      }, walletConfig);
     },
-    [authorizeSession]
+    [authorizeSessionWithSignIn, walletConfig]
   );
 
   const disconnect = useCallback(async (): Promise<void> => {
     await transact(async (wallet) => {
       await deauthorizeSession(wallet);
-    });
-  }, [deauthorizeSession]);
+    }, walletConfig);
+  }, [deauthorizeSession, walletConfig]);
 
   const signAndSendTransaction = useCallback(
     async (
       transaction: Transaction | VersionedTransaction,
-      minContextSlot: number,
+      minContextSlot: number
     ): Promise<TransactionSignature> => {
       return await transact(async (wallet) => {
         await authorizeSession(wallet);
@@ -45,9 +54,9 @@ export function useMobileWallet() {
           minContextSlot,
         });
         return signatures[0];
-      });
+      }, walletConfig);
     },
-    [authorizeSession]
+    [authorizeSession, walletConfig]
   );
 
   const signMessage = useCallback(
@@ -59,9 +68,9 @@ export function useMobileWallet() {
           payloads: [message],
         });
         return signedMessages[0];
-      });
+      }, walletConfig);
     },
-    [authorizeSession]
+    [authorizeSession, walletConfig]
   );
 
   return useMemo(
@@ -72,6 +81,6 @@ export function useMobileWallet() {
       signAndSendTransaction,
       signMessage,
     }),
-    [signAndSendTransaction, signMessage]
+    [connect, signIn, disconnect, signAndSendTransaction, signMessage]
   );
 }
