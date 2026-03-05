@@ -1,105 +1,169 @@
-# Solana Mobile Expo Template
+# Proof
 
-This template is a ready-to-go Android Expo dApp that offers:
+**Blockchain-verified photo authenticity for Solana Mobile.**
 
-- Solana libraries: `web3.js`, Mobile Wallet Adapter, and `spl-token`.
-- Required polyfills like `crypto` and `Buffer` configured.
-- Pre-built React UI and re-usable hooks and code patterns like `useMobileWallet`.
+In the age of AI deepfakes, how do you know a photo is real? Proof anchors your photos on the Solana blockchain the instant you take them — creating an immutable, verifiable record that this photo existed at this time, in this place, unaltered.
 
-**This is only fully functional on Android.**
+Built for the [MONOLITH Solana Mobile Hackathon](https://solanamobile.radiant.nexus/) by RadiantsDAO.
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="./screenshots/screenshot1.png" alt="Scaffold dApp Screenshot 1" width=300 />
-    </td>
-    <td align="center">
-      <img src="./screenshots/screenshot2.png" alt="Scaffold dApp Screenshot 2" width=300 />
-    </td>
-    <td align="center">
-      <img src="./screenshots/screenshot3.png" alt="Scaffold dApp Screenshot 3" width=300 />
-    </td>
-  </tr>
-</table>
+## How It Works
+
+1. **Capture** — Take a photo with the in-app camera
+2. **Hash** — SHA-256 hash is computed over the image + timestamp + GPS + device ID
+3. **Anchor** — Hash is written to Solana via the Memo program (~$0.00025 per proof)
+4. **Verify** — Anyone can re-hash the original image and compare it to the on-chain record
+
+## Features
+
+### Core Proof System
+- Camera capture with real-time SHA-256 hashing
+- Metadata cryptographically bound to image (timestamp, GPS, device — changing any field changes the hash)
+- On-chain anchoring via Solana Memo program
+- Gallery of proved photos with verification details
+- Solana Explorer deep links for every proof
+
+### SKR Token Integration
+- **Tiered access** — Hold SKR to unlock the community feed (1+ Holder, 100+ Pro, 1,000+ Whale)
+- **Vouching** — Stake SKR on a proof's authenticity (community-verified trust)
+- **Trust scores** — Computed from total SKR vouched + unique vouchers + Seeker bonus
+- **On-chain vouch binding** — Every vouch includes a Memo with the proof hash, making trust scores cryptographically verifiable
+- **Protocol fee** — 5% on vouches supports ongoing development
+
+### Seeker / SGT Integration
+- Detects Seeker hardware via `Platform.constants.Model`
+- Verifies Seeker Genesis Token (SGT) ownership on-chain for trust-level features
+- SGT-verified proofs receive a base trust bonus in the feed
+- Device model detection is cosmetic only — trust features require on-chain SGT proof
+
+### Wallet Support
+- Solana Seeker Seed Vault (primary)
+- Phantom
+- Jupiter
+- Any MWA-compatible wallet
+- Wallet URI persistence for automatic reconnection
+
+### Security
+- Private keys never touch app code (MWA wallet handles all signing)
+- Auth tokens stored in Android Keystore via SecureStore
+- Transaction simulation before every send (catches failures before spending SOL)
+- Anti-phishing confirmation dialogs on wallet connect
+- Input validation on all hashes, coordinates, amounts, and memo sizes
+- Self-vouch and duplicate-vouch protection
+- Treasury guard blocks app launch if fee wallet is misconfigured
 
 ## Tech Stack
 
-| Library               | Category          | Version | Description                                           |
-| --------------------- | ----------------- | ------- | ----------------------------------------------------- |
-| React Native          | Mobile Framework  | v0.76   | The best cross-platform mobile framework              |
-| Expo                  | SDK               | v52     | Allows (optional) Expo modules                        |
-| React                 | UI Framework      | v18.3   | The most popular UI framework in the world            |
-| Mobile Wallet Adapter | SDK               | v2.1    | Connect and request signing from mobile wallet apps   |
-| Solana web3.js        | SDK               | v1.78   | General Solana library for transactions and RPCs      |
-| spl-token             | SDK               | v0.4    | Library for building with Solana SPL tokens           |
-| React Native Paper    | Component Library | v5.12   | Production-ready components following Material Design |
-| React Navigation      | Navigation        | v6      | Performant and consistent navigation framework        |
-| React Query           | State management  | v5.24   | Async query management                                |
-| TypeScript            | Language          | v5      | Static typechecking                                   |
-| AsyncStorage          | Persistence       | v1.23   | State persistence                                     |
+| Library | Version | Purpose |
+|---|---|---|
+| React Native | 0.76 | Mobile framework |
+| Expo SDK | 52 | Build tooling and native modules |
+| Mobile Wallet Adapter | 2.2 | Wallet connection protocol |
+| @solana/web3.js | 1.78 | Solana RPC and transactions |
+| @solana/spl-token | 0.4 | SKR token transfers and SGT verification |
+| expo-camera | 16.0 | Photo capture |
+| expo-location | 18.0 | GPS coordinates |
+| expo-crypto | 14.0 | SHA-256 hashing |
+| expo-secure-store | 14.0 | Encrypted auth storage |
+| React Native Paper | 5.12 | Material Design components |
+| React Navigation | 6 | Screen navigation |
+| React Query | 5.24 | Async state management |
 
 ## Quick Start
 
 ### Prerequisites
+- Node.js 18+
+- Android Studio with SDK 34+
+- JDK 17+ (bundled with Android Studio)
 
-- A free [Expo](https://expo.dev/) account.
-- An Android device/emulator to test your app
-  - Install an MWA compliant wallet app on your device/emulator.
-- If using Expo's cloud service `eas build`, no further setup is required.
-- If building locally:
-  - React Native and Android Envrionment [setup](https://docs.solanamobile.com/getting-started/development-setup)
-
-### Initialize
-
-Run the CLI command:
-
-```
-yarn create expo-app --template @solana-mobile/solana-mobile-expo-template
+### Install
+```bash
+git clone https://github.com/yarbroughrh/proof.git
+cd proof
+npm install
 ```
 
-Choose your project name then navigate into the directory.
+### Run on Android
+```bash
+# Generate native project
+npx expo prebuild --platform android
 
-### Build and run the app
+# Build and run (starts Metro automatically)
+npx expo run:android
+```
 
-Once your app is initialized, follow the **["Running the app"](https://docs.solanamobile.com/react-native/expo#running-the-app)** guide to launch the template as a custom development build.
+### Open in Android Studio
+```bash
+npx expo prebuild --platform android
+# Then open the /android folder in Android Studio
+# Start Metro separately: npx expo start --dev-client
+```
 
-## Troubleshooting
+### Build Release APK
+```bash
+npx expo prebuild --platform android --clean
+cd android
+./gradlew assembleRelease
+# APK at: android/app/build/outputs/apk/release/app-release.apk
+```
 
-- `Metro has encountered an error: While trying to resolve module @solana-mobile/mobile-wallet-adapter-protocol...`
+## Architecture
 
-  - This is an on-going issue when using `npm install` to install the Expo template.
-  - To mitigate, clean your project dependencies and reinstall with `yarn install`
+```
+src/
+├── screens/
+│   ├── HomeScreen.tsx          # Dashboard + wallet connect
+│   ├── CameraScreen.tsx        # Capture + hash + anchor flow
+│   ├── GalleryScreen.tsx       # Grid of proved photos
+│   ├── FeedScreen.tsx          # SKR-gated community feed with vouching
+│   └── ProofDetailScreen.tsx   # Full proof details + explorer link
+├── utils/
+│   ├── useAuthorization.tsx    # MWA wallet auth + SecureStore
+│   ├── useMobileWallet.tsx     # Sign, send, disconnect with wallet URI
+│   ├── useProofAnchor.tsx      # Memo program proof transactions
+│   ├── useProofStore.tsx       # AsyncStorage proof records
+│   ├── useSeeker.tsx           # SGT verification + device detection
+│   ├── useSKR.tsx              # SKR balance queries
+│   ├── useSKRTransfer.tsx      # Vouch transfers with fee split + memo binding
+│   ├── hashPhoto.ts            # SHA-256 over image + metadata
+│   ├── safety.ts               # Treasury guard + tx simulation
+│   ├── constants.ts            # Addresses, limits, config
+│   └── theme.ts                # Dark theme colors
+├── components/
+│   ├── sign-in/                # Connect + SIWS with anti-phishing
+│   ├── top-bar/                # PROOF branding + wallet menu
+│   ├── cluster/                # Network selector
+│   └── account/                # Balance + token display
+└── navigators/
+    ├── AppNavigator.tsx         # Root stack
+    └── HomeNavigator.tsx        # Bottom tabs (Home, Prove, Gallery, Feed)
+```
 
-- `The package 'solana-mobile-wallet-adapter-protocol' doesn't seem to be linked. Make sure: ...`
+## On-Chain Data Format
 
-  - Ensure you are _NOT_ using Expo Go to run your app.
-  - You need to be using an [Expo custom development build](https://docs.solanamobile.com/react-native/expo#custom-development-build), rather than Expo Go.
+### Proof Memo
+```json
+{
+  "p": "proof",
+  "v": "1",
+  "h": "a1b2c3...64char_sha256",
+  "t": 1709567890000,
+  "lat": 37.77493,
+  "lng": -122.41942,
+  "d": "Seeker",
+  "skr": true
+}
+```
 
-- `failed to connect to...`
+### Vouch Memo
+```json
+{
+  "p": "proof-vouch",
+  "h": "a1b2c3...64char_sha256",
+  "a": 5,
+  "to": "creator_wallet_address"
+}
+```
 
-  - This is an Expo error that can occur when trying to connect to the dev server on certain Wifi networks.
-  - To fix, try starting the dev server with the `--tunnel` command (`npx expo start --dev-client --tunnel`)
+## License
 
-- `Error: crypto.getRandomValues() not supported`
-  - This is a polyfill issue when trying to use certain functions from the `@solana/web3.js` in a React Native/Expo environment.
-  - To fix, ensure your App properly imports and uses the polyfills like in this [guide](http://docs.solanamobile.com/react-native/expo#step-3-update-appjs-with-polyfills).
-
-<br>
-
-- `error Failed to load configuration of your project.`
-  - Same as above, but for `yarn`. [Uninstall and reinstall](https://github.com/react-native-community/cli#updating-the-cli) the CLI through yarn.
-
-<br>
-
-- `Looks like your iOS environment is not properly set`:
-  - You can ignore this during template initialization and build the Android app as normal. This template is only compatible with Android.
-
-<br>
-
-- `Usage Error: It seems you are trying to add a package using a https:... url; we now require package names to be explicitly specified.`
-  - This error happens on certain versions of `yarn`, and occurs if you try to initialize the template through the Github repo URL, rather than the npm package. To avoid this, use the `@solana-mobile/solana-mobile-dapp-scaffold` package as specified, or downgrade your `yarn` version to classic (1.22.x).
-
-<br>
-
-- `error Couldn't find the ".../@solana-mobile/solana-mobile-dapp-scaffold/template.config.js file inside "@solana-mobile/solana-mobile-dapp-scaffold" template.`
-  - This is a [known error](https://github.com/react-native-community/cli/issues/1924) that occurs with certain versions of `yarn` (>= 3.5.0). It is fixed by running the cli command with the `--npm` flag or downgrading your version of `yarn`.
+MIT
