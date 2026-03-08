@@ -98,10 +98,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0A0A0F",
-    paddingTop: 8,
+    paddingTop: 10,
   },
   header: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "700",
     color: "#E8E8F0",
     paddingHorizontal: 16,
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.dimText,
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   grid: {
     paddingHorizontal: ITEM_GAP,
-    paddingBottom: 20,
+    paddingBottom: 102,
   },
   row: {
     gap: ITEM_GAP,
@@ -123,9 +123,11 @@ const styles = StyleSheet.create({
   thumbContainer: {
     width: ITEM_WIDTH,
     height: ITEM_WIDTH * 1.25,
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#1A1A2E",
+    backgroundColor: Colors.cardBg,
+    borderWidth: 1,
+    borderColor: Colors.softBorder,
   },
   thumbImage: {
     width: "100%",
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
   thumbOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
-    padding: 8,
+    padding: 10,
   },
   thumbBadgeRow: {
     flexDirection: "row",

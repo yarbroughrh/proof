@@ -16,19 +16,36 @@ export function HomeNavigator() {
       screenOptions={{
         header: () => <TopBar />,
         tabBarStyle: {
-          backgroundColor: "#0F0F1A",
-          borderTopColor: "#1A1A2E",
+          position: "absolute",
+          backgroundColor: "rgba(15,16,34,0.96)",
+          borderTopColor: "rgba(255,255,255,0.06)",
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 4,
+          borderRadius: 24,
+          height: 72,
+          paddingBottom: 10,
+          paddingTop: 8,
+          left: 12,
+          right: 12,
+          bottom: 12,
+          elevation: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 14 },
+          shadowOpacity: 0.35,
+          shadowRadius: 24,
         },
         tabBarActiveTintColor: Colors.verified,
-        tabBarInactiveTintColor: "#555",
+        tabBarInactiveTintColor: "#6B6B80",
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: "600",
+          fontWeight: "700",
         },
+        tabBarItemStyle: {
+          borderRadius: 18,
+          marginHorizontal: 3,
+          marginVertical: 4,
+        },
+        tabBarActiveBackgroundColor: "rgba(0,229,255,0.08)",
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tab.Screen
@@ -48,6 +65,7 @@ export function HomeNavigator() {
         name="Camera"
         component={CameraScreen}
         options={{
+          unmountOnBlur: true,
           tabBarIcon: ({ focused, color, size }) => (
             <MaterialCommunityIcon
               name={focused ? "camera" : "camera-outline"}

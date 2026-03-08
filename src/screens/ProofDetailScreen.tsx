@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0A0A0F",
   },
   content: {
-    paddingBottom: 32,
+    paddingBottom: 108,
   },
   center: {
     flex: 1,
@@ -190,8 +190,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 320,
-    resizeMode: "cover",
+    aspectRatio: 4 / 3,
+    resizeMode: "contain",
+    backgroundColor: "#000",
   },
   badgeRow: {
     flexDirection: "row",
@@ -242,11 +243,11 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
     marginTop: 16,
-    backgroundColor: "#1A1A2E",
-    borderRadius: 14,
+    backgroundColor: Colors.cardBg,
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
+    borderColor: Colors.softBorder,
   },
   cardTitle: {
     color: "#E8E8F0",
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   },
   explorerBtn: {
     backgroundColor: Colors.verified,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
     marginTop: 4,
@@ -318,9 +319,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: Colors.dimText,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.02)",
   },
   shareToggleActive: {
     borderColor: Colors.skrToken,

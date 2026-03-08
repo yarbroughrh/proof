@@ -39,4 +39,8 @@ export const Colors = {
   skrTokenBg: "rgba(165, 214, 167, 0.1)",
   dimText: "#6B6B80",
   cardBorder: "#2A2A45",
+  cardBg: "#151528",
+  panelBg: "#111122",
+  softBorder: "rgba(255,255,255,0.08)",
+  softShadow: "rgba(0, 0, 0, 0.45)",
 };

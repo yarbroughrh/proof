@@ -53,9 +53,8 @@ function buildMemoData(payload: ProofPayload): string {
     v: PROOF_VERSION,
     h: payload.hash,
     t: payload.timestamp,
-    ...(payload.lat != null && { lat: Math.round(payload.lat * 100000) / 100000 }),
-    ...(payload.lng != null && { lng: Math.round(payload.lng * 100000) / 100000 }),
-    d: payload.device.slice(0, 32),
+    ...(payload.lat != null && { lat: Math.round(payload.lat * 100) / 100 }),
+    ...(payload.lng != null && { lng: Math.round(payload.lng * 100) / 100 }),
     ...(payload.isSeeker && { skr: true }),
   };
   const json = JSON.stringify(obj);

@@ -17,6 +17,7 @@ import { Colors } from "../utils/theme";
 import { ellipsify } from "../utils/ellipsify";
 import { PublicKey } from "@solana/web3.js";
 import { PROTOCOL_FEE_BPS } from "../utils/constants";
+import { getDemoProofs } from "../utils/demoData";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -215,11 +216,18 @@ export default function FeedScreen() {
   const [filterSeeker, setFilterSeeker] = useState(false);
 
   const tier = getTier(skrInfo.balance);
-  const canAccessFeed = skrInfo.hasToken && skrInfo.balance >= SKR_TIERS.BASIC.min;
-  const canBoost = skrInfo.balance >= SKR_TIERS.PRO.min;
+
+  const allFeedProofs = useMemo(() => {
+    const demo = getDemoProofs();
+    const userWallet = selectedAccount?.publicKey.toBase58() ?? "";
+    const deduped = demo.filter(
+      (d) => !sharedProofs.some((s) => s.id === d.id)
+    );
+    return [...sharedProofs, ...deduped];
+  }, [sharedProofs, selectedAccount]);
 
   const sortedProofs = useMemo(() => {
-    let proofs = [...sharedProofs];
+    let proofs = [...allFeedProofs];
     if (filterSeeker) {
       proofs = proofs.filter((p) => p.isSeeker);
     }
@@ -230,11 +238,20 @@ export default function FeedScreen() {
       return b.timestamp - a.timestamp;
     });
     return proofs;
-  }, [sharedProofs, filterSeeker]);
+  }, [allFeedProofs, filterSeeker]);
 
   const handleVouch = useCallback(
     async (proof: ProofRecord, amount: number) => {
       if (!selectedAccount) return;
+
+      if (proof.isDemo) {
+        Alert.alert(
+          "Demo Proof",
+          "This is a demo entry. Vouching is disabled for demo proofs — only real on-chain proofs can be vouched.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
 
       if (selectedAccount.publicKey.toBase58() === proof.walletAddress) {
         Alert.alert("Can't Vouch", "You cannot vouch for your own proof.", [
@@ -266,12 +283,16 @@ export default function FeedScreen() {
 
       const feePercent = PROTOCOL_FEE_BPS / 100;
       const creatorGets = amount - (amount * PROTOCOL_FEE_BPS) / 10000;
+      const recipientShort = `${proof.walletAddress.slice(0, 4)}…${proof.walletAddress.slice(-4)}`;
 
       Alert.alert(
         "Confirm Vouch",
-        `Stake ${amount} SKR on this proof's authenticity?\n\n` +
+        `Stake ${amount} SKR on this proof?\n\n` +
+          `To: ${recipientShort}\n` +
           `Creator receives: ${creatorGets.toFixed(1)} SKR\n` +
-          `Protocol fee (${feePercent}%): ${(amount - creatorGets).toFixed(1)} SKR\n\n` +
+          `Protocol fee (${feePercent}%): ${(amount - creatorGets).toFixed(1)} SKR\n` +
+          `Network: ${proof.cluster ?? "mainnet-beta"}\n\n` +
+          `Note: a small SOL fee (~0.002 SOL) may be charged if token accounts need to be created.\n\n` +
           `This cannot be undone.`,
         [
           { text: "Cancel", style: "cancel" },
@@ -327,23 +348,6 @@ export default function FeedScreen() {
         <Text style={styles.gateTitle}>Connect Wallet</Text>
         <Text style={styles.gateText}>
           Connect your wallet on the Home tab to access the community feed.
-        </Text>
-      </View>
-    );
-  }
-
-  if (!canAccessFeed) {
-    return <SKRGateScreen balance={skrInfo.balance} />;
-  }
-
-  if (!sharedProofs.length) {
-    return (
-      <View style={styles.gateContainer}>
-        <Text style={{ fontSize: 48, marginBottom: 12 }}>🌐</Text>
-        <Text style={styles.gateTitle}>Feed is empty</Text>
-        <Text style={styles.gateText}>
-          Proved photos shared to the feed will appear here.{"\n"}
-          Take a photo and toggle "Share to Feed" to get started.
         </Text>
       </View>
     );
@@ -444,11 +448,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
+    paddingTop: 10,
+    paddingBottom: 6,
   },
   header: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "700",
     color: "#E8E8F0",
   },
@@ -491,7 +495,7 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: "row",
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 8,
   },
   filterChip: {
@@ -516,13 +520,13 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingTop: 4,
-    paddingBottom: 24,
+    paddingBottom: 102,
   },
   card: {
-    backgroundColor: "#1A1A2E",
-    borderRadius: 16,
+    backgroundColor: Colors.cardBg,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
+    borderColor: Colors.softBorder,
     overflow: "hidden",
   },
   boostedCard: {
@@ -544,7 +548,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   authorRow: {
     flexDirection: "row",
@@ -610,14 +615,16 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: SCREEN_WIDTH - 34,
-    height: SCREEN_WIDTH * 0.75,
-    resizeMode: "cover",
+    aspectRatio: 4 / 3,
+    resizeMode: "contain",
+    backgroundColor: "#000",
   },
   cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   tipInfo: {
     flex: 1,
@@ -640,7 +647,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(165, 214, 167, 0.08)",
     borderWidth: 1,
     borderColor: Colors.skrToken,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
     alignItems: "center",

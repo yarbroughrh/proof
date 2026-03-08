@@ -1,12 +1,15 @@
-import { Button, IconButton, Menu, useTheme } from "react-native-paper";
+import MaterialCommunityIcon from "@expo/vector-icons/MaterialCommunityIcons";
+import { Button, IconButton, Menu } from "react-native-paper";
 import { Account, useAuthorization } from "../../utils/useAuthorization";
 import { useMobileWallet } from "../../utils/useMobileWallet";
 import { useNavigation } from "@react-navigation/native";
 import { ellipsify } from "../../utils/ellipsify";
 import { useState } from "react";
 import * as Clipboard from "expo-clipboard";
-import { Linking } from "react-native";
+import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useCluster } from "../cluster/cluster-data-access";
+import { Colors } from "../../utils/theme";
+import { alertAndLog } from "../../utils/alertAndLog";
 
 export function TopBarWalletButton({
   selectedAccount,
@@ -16,17 +19,56 @@ export function TopBarWalletButton({
   openMenu: () => void;
 }) {
   const { connect } = useMobileWallet();
+
+  const handleConnectPress = () => {
+    Alert.alert(
+      "Connect Wallet",
+      "Proof will request read-only access to your wallet address. " +
+        "It will NEVER have access to your private keys or be able to move funds without your explicit approval.\n\n" +
+        "Only connect if you opened this app yourself.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Connect",
+          onPress: async () => {
+            try {
+              await connect();
+            } catch (err: any) {
+              alertAndLog("Connection failed", err instanceof Error ? err.message : err);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <Button
-      icon="wallet"
-      mode="contained-tonal"
-      style={{ alignSelf: "center" }}
-      onPress={selectedAccount ? openMenu : connect}
+    <TouchableOpacity
+      activeOpacity={0.86}
+      style={[
+        styles.walletButton,
+        selectedAccount ? styles.walletButtonConnected : styles.walletButtonIdle,
+      ]}
+      onPress={selectedAccount ? openMenu : handleConnectPress}
     >
-      {selectedAccount
-        ? ellipsify(selectedAccount.publicKey.toBase58())
-        : "Connect"}
-    </Button>
+      <View style={styles.walletIconWrap}>
+        <MaterialCommunityIcon
+          name="wallet-outline"
+          size={14}
+          color={selectedAccount ? Colors.verified : "#F4D369"}
+        />
+      </View>
+      <Text
+        style={[
+          styles.walletLabel,
+          selectedAccount ? styles.walletLabelConnected : styles.walletLabelIdle,
+        ]}
+      >
+        {selectedAccount
+          ? ellipsify(selectedAccount.publicKey.toBase58(), 4)
+          : "Connect"}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
@@ -100,3 +142,41 @@ export function TopBarWalletMenu() {
     </Menu>
   );
 }
+
+const styles = StyleSheet.create({
+  walletButton: {
+    height: 38,
+    borderRadius: 19,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+  },
+  walletButtonIdle: {
+    backgroundColor: "rgba(255, 179, 0, 0.12)",
+    borderColor: "rgba(255, 179, 0, 0.2)",
+  },
+  walletButtonConnected: {
+    backgroundColor: "rgba(0, 229, 255, 0.08)",
+    borderColor: "rgba(0, 229, 255, 0.18)",
+  },
+  walletIconWrap: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  walletLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  walletLabelIdle: {
+    color: "#F6E8B5",
+  },
+  walletLabelConnected: {
+    color: "#D8FCFF",
+  },
+});
