@@ -31,21 +31,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#1A1A2E",
+    borderBottomColor: "rgba(255,255,255,0.05)",
+    height: 64,
   },
   brand: {
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: 12,
+    paddingLeft: 16,
   },
   brandText: {
     fontSize: 18,
     fontWeight: "900",
     color: Colors.verified,
     letterSpacing: 3,
+    textShadowColor: "rgba(0, 229, 255, 0.35)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
   actions: {
     flexDirection: "row",
     alignItems: "center",
+    paddingRight: 6,
   },
 });

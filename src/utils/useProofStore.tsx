@@ -21,6 +21,7 @@ export interface ProofRecord {
   walletAddress: string;
   isSeeker: boolean;
   shared: boolean;
+  isDemo?: boolean;
   tips: TipRecord[];
 }
 
@@ -34,6 +35,7 @@ async function loadProofs(): Promise<ProofRecord[]> {
     return parsed.map((p) => ({
       ...p,
       shared: p.shared ?? false,
+      isDemo: p.isDemo ?? false,
       tips: p.tips ?? [],
     }));
   } catch {

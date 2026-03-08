@@ -17,7 +17,7 @@ ios/
 *.p8
 *.p12
 *.key
-*.mobileprovision
+*.mobileprovision                                                                                                   
 
 # Metro
 .metro-health-check*

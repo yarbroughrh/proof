@@ -1,17 +1,16 @@
 import { useState, useCallback } from "react";
-import { Alert } from "react-native";
-import { Button } from "react-native-paper";
+import { Alert, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Text } from "react-native-paper";
 import { alertAndLog } from "../../utils/alertAndLog";
-import { useAuthorization } from "../../utils/useAuthorization";
 import { useMobileWallet } from "../../utils/useMobileWallet";
+import { Colors } from "../../utils/theme";
 
 export function ConnectButton() {
-  const { authorizeSession } = useAuthorization();
   const { connect } = useMobileWallet();
-  const [authorizationInProgress, setAuthorizationInProgress] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleConnectPress = useCallback(async () => {
-    if (authorizationInProgress) return;
+  const handlePress = useCallback(async () => {
+    if (loading) return;
 
     Alert.alert(
       "Connect Wallet",
@@ -24,7 +23,7 @@ export function ConnectButton() {
           text: "Connect",
           onPress: async () => {
             try {
-              setAuthorizationInProgress(true);
+              setLoading(true);
               await connect();
             } catch (err: any) {
               alertAndLog(
@@ -32,74 +31,50 @@ export function ConnectButton() {
                 err instanceof Error ? err.message : err
               );
             } finally {
-              setAuthorizationInProgress(false);
+              setLoading(false);
             }
           },
         },
       ]
     );
-  }, [authorizationInProgress, connect]);
+  }, [loading, connect]);
 
   return (
-    <Button
-      mode="contained"
-      disabled={authorizationInProgress}
-      onPress={handleConnectPress}
-      style={{ flex: 1 }}
+    <TouchableOpacity
+      style={[styles.button, loading && styles.buttonDisabled]}
+      onPress={handlePress}
+      disabled={loading}
+      activeOpacity={0.85}
     >
-      Connect
-    </Button>
+      {loading ? (
+        <ActivityIndicator color="#001116" size="small" />
+      ) : (
+        <Text style={styles.label}>Connect Wallet</Text>
+      )}
+    </TouchableOpacity>
   );
 }
 
-export function SignInButton() {
-  const { authorizeSession } = useAuthorization();
-  const { signIn } = useMobileWallet();
-  const [signInInProgress, setSignInInProgress] = useState(false);
-
-  const handleSignInPress = useCallback(async () => {
-    if (signInInProgress) return;
-
-    Alert.alert(
-      "Sign In With Solana",
-      "You will sign a message to verify wallet ownership. " +
-        "This does NOT authorize any transactions or token transfers.\n\n" +
-        "Only sign in if you opened this app yourself.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Sign In",
-          onPress: async () => {
-            try {
-              setSignInInProgress(true);
-              await signIn({
-                domain: "proof.solana.app",
-                statement:
-                  "Sign in to Proof — blockchain photo authenticity",
-                uri: "https://proof.solana.app",
-              });
-            } catch (err: any) {
-              alertAndLog(
-                "Error during sign in",
-                err instanceof Error ? err.message : err
-              );
-            } finally {
-              setSignInInProgress(false);
-            }
-          },
-        },
-      ]
-    );
-  }, [signInInProgress, signIn]);
-
-  return (
-    <Button
-      mode="outlined"
-      disabled={signInInProgress}
-      onPress={handleSignInPress}
-      style={{ marginLeft: 4, flex: 1 }}
-    >
-      Sign in
-    </Button>
-  );
-}
+const styles = StyleSheet.create({
+  button: {
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: Colors.verified,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: Colors.verified,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  label: {
+    color: "#001116",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+});
